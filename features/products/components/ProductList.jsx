@@ -1,6 +1,5 @@
-// features/products/components/ProductList.jsx
+import DeleteButton from "@/features/products/components/DeleteButton.client";
 import Link from "next/link";
-import DeleteButton from "./DeleteButton.client";
 
 export default function ProductList({ products = [], showAdminControls = false }) {
   if (!products || products.length === 0) {

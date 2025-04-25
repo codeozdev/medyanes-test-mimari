@@ -26,3 +26,9 @@ span,
 p {
   @apply text-black;
 }
+
+input,
+select,
+textarea {
+  @apply text-black;
+}

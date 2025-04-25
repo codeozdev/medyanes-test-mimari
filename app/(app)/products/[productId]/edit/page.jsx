@@ -1,7 +1,4 @@
-// app/(app)/products/[productId]/edit/page.jsx
-import EditForm from "@/features/products/components/EditForm.client";
-import { fetchProductById, updateProduct } from "@/features/products/servers/actions";
-import { getCategories } from "@/features/products/servers/data-access";
+import { EditForm, fetchProductById, getCategories, updateProduct } from "@/features/products";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -58,15 +55,11 @@ export default async function EditProductPage(props) {
       throw new Error("Bu işlemi gerçekleştirmek için admin yetkisine sahip olmalısınız.");
     }
 
-    // data zaten bir JavaScript objesi, doğrudan kullan
     const result = await updateProduct(productId, data);
 
     if (!result.success) {
       throw new Error(result.error || "Ürün güncellenirken bir hata oluştu.");
     }
-
-    // Başarılı olduğunda ürün detay sayfasına yönlendir
-    // Bu bir hata değil, normal bir yönlendirme işlemi
     redirect(`/products`);
   }
 

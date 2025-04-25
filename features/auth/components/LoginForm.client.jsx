@@ -1,4 +1,3 @@
-// features/auth/components/LoginForm.client.jsx
 "use client";
 
 import { signIn } from "next-auth/react";

@@ -1,5 +1,5 @@
+import { DeleteButton } from "@/features/products";
 import Link from "next/link";
-import DeleteButton from "./DeleteButton.client";
 
 // features/products/components/ProductCard.jsx
 export default function ProductCard({ product, showEditControls = false }) {

@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect } from "react";
 
 export default function Error({ error, reset }) {
@@ -19,11 +20,11 @@ export default function Error({ error, reset }) {
             className="px-4 py-2 bg-blue-600 text-white font-medium rounded-md hover:bg-blue-700">
             Tekrar Dene
           </button>
-          <a
+          <Link
             href="/"
             className="px-4 py-2 border border-gray-300 text-gray-700 font-medium rounded-md hover:bg-gray-50">
             Ana Sayfaya Dön
-          </a>
+          </Link>
         </div>
       </div>
     </div>

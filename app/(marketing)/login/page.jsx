@@ -1,4 +1,4 @@
-import LoginForm from "@/features/auth/components/LoginForm.client";
+import { LoginForm } from "@/features/auth";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";

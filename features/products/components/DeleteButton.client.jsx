@@ -1,4 +1,3 @@
-// features/products/components/DeleteButton.client.jsx
 "use client";
 
 import { useRouter } from "next/navigation";

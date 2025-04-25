@@ -1,6 +1,4 @@
-// app/(app)/products/page.jsx
-import ProductList from "@/features/products/components/ProductList";
-import { fetchProducts } from "@/features/products/servers/actions";
+import { ProductList, fetchProducts } from "@/features/products";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
 
@@ -9,7 +7,6 @@ export default async function ProductsPage() {
   const session = await auth();
   const isAdmin = session?.user?.role === "admin";
 
-  // Ürünleri getir
   const result = await fetchProducts();
   const products = result.success ? result.data : [];
 

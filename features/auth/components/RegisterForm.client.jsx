@@ -1,8 +1,8 @@
 "use client";
 
+import { registerUser } from "@/features/auth";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { registerUser } from "../servers/actions";
 
 export default function RegisterForm() {
   const router = useRouter();

@@ -1,5 +1,4 @@
-// app/(app)/layout.jsx
-import LogoutButton from "@/features/auth/components/LogoutButton.client";
+import { LogoutButton } from "@/features/auth";
 import { auth } from "@/lib/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";

@@ -1,7 +1,4 @@
-// app/(app)/products/new/page.jsx
-import ProductForm from "@/features/products/components/EditForm.client";
-import { createProduct } from "@/features/products/servers/actions"; // Bu satırı ekleyin
-import { getCategories } from "@/features/products/servers/data-access";
+import { EditForm, createProduct, getCategories } from "@/features/products";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -66,12 +63,7 @@ export default async function NewProductPage() {
           </a>
         </div>
       ) : (
-        <ProductForm
-          categories={categories}
-          initialData={{}}
-          onSubmit={handleSubmit}
-          isEdit={false}
-        />
+        <EditForm categories={categories} initialData={{}} onSubmit={handleSubmit} isEdit={false} />
       )}
     </div>
   );
