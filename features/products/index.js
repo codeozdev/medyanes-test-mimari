@@ -8,10 +8,10 @@ export { default as ProductList } from "./components/ProductList";
 export {
   createProduct,
   deleteProduct,
+  fetchCategories,
   fetchProductById,
   fetchProducts,
   updateProduct,
 } from "./servers/actions";
 
-// Data Access
-export { getCategories } from "./servers/data-access";
+// Artık data-access doğrudan export edilmiyor, server actions üzerinden erişim sağlanıyor

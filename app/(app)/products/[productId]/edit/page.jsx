@@ -1,4 +1,4 @@
-import { EditForm, fetchProductById, getCategories, updateProduct } from "@/features/products";
+import { EditForm, fetchCategories, fetchProductById, updateProduct } from "@/features/products";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -18,15 +18,14 @@ export default async function EditProductPage(props) {
   const productId = params.productId;
 
   // Ürün verilerini ve kategorileri getir
-  const [{ success, data: product, error }, categories] = await Promise.all([
-    fetchProductById(productId),
-    getCategories(),
-  ]);
+  const productResult = await fetchProductById(productId);
+  const categoriesResult = await fetchCategories();
 
-  if (!success) {
+  // Ürün bulunamadıysa hata göster
+  if (!productResult.success) {
     return (
       <div className="bg-white shadow rounded-lg p-8 text-center">
-        <p className="text-red-500">{error || "Ürün yüklenirken bir hata oluştu."}</p>
+        <p className="text-red-500">{productResult.error || "Ürün yüklenirken bir hata oluştu."}</p>
         <a
           href="/products"
           className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
@@ -35,6 +34,9 @@ export default async function EditProductPage(props) {
       </div>
     );
   }
+
+  const product = productResult.data;
+  const categories = categoriesResult.success ? categoriesResult.data : [];
 
   // Form için initial data
   const initialData = {

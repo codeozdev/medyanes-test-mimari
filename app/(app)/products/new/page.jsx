@@ -1,4 +1,4 @@
-import { EditForm, createProduct, getCategories } from "@/features/products";
+import { EditForm, createProduct, fetchCategories } from "@/features/products";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -14,17 +14,16 @@ export default async function NewProductPage() {
   // Kategorileri getir
   let categories = [];
   try {
-    categories = await getCategories();
+    const result = await fetchCategories();
 
-    // Eğer categories undefined veya null gelirse boş dizi kullan
-    if (!categories) {
-      categories = [];
-      console.error("Kategoriler yüklenemedi");
+    if (result.success) {
+      categories = result.data;
+    } else {
+      console.error("Kategoriler yüklenemedi:", result.error);
     }
   } catch (error) {
     console.error("Kategori yükleme hatası:", error);
     // Hata durumunda boş dizi kullan
-    categories = [];
   }
 
   // Server action (form submit)

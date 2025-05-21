@@ -1,67 +1,54 @@
 // features/products/servers/actions.js
 "use server";
 
-import { getCurrentUser } from "@/lib/auth"; // Auth yardımcılarınızı import edin
+import { checkRole } from "@/lib/action-helpers";
 import { revalidatePath } from "next/cache";
-import {
-  createProductInDb,
-  deleteProductFromDb,
-  getProductById,
-  getProducts,
-  updateProductInDb,
-} from "./data-access";
+import { Category, Product } from "./data-access";
 
-// Admin yetkisi kontrol fonksiyonu
-async function requireAdmin() {
-  const user = await getCurrentUser();
-  if (!user || user.role !== "admin") {
-    throw new Error("Bu işlemi gerçekleştirmek için admin yetkisine sahip olmalısınız.");
-  }
-  return user;
-}
-
-// Ürünleri getiren fonksiyon
+// Veri getirme işlemleri
 export async function fetchProducts(filters = {}) {
   try {
-    const products = await getProducts(filters);
+    const products = await Product.getAll(filters);
     return { success: true, data: products };
   } catch (error) {
-    console.error("Error fetching products:", error);
-    return { success: false, error: error.message || "Ürünler yüklenirken bir hata oluştu." };
+    console.error("Ürün getirme hatası:", error);
+    return { success: false, error: error.message };
   }
 }
 
-// Tek bir ürün getiren fonksiyon
 export async function fetchProductById(productId) {
   try {
-    const product = await getProductById(productId);
+    const product = await Product.getById(productId);
     if (!product) {
       return { success: false, error: "Ürün bulunamadı." };
     }
     return { success: true, data: product };
   } catch (error) {
-    console.error("Error fetching product:", error);
-    return { success: false, error: error.message || "Ürün yüklenirken bir hata oluştu." };
+    console.error("Ürün detayı getirme hatası:", error);
+    return { success: false, error: error.message };
   }
 }
 
-// features/products/servers/actions.js
+export async function fetchCategories() {
+  try {
+    const categories = await Category.getAll();
+    return { success: true, data: categories };
+  } catch (error) {
+    console.error("Kategori getirme hatası:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+// Admin yetkisi gerektiren işlemler
 export async function createProduct(data) {
-  // Admin yetkisi kontrolü
-  await requireAdmin();
+  // Yetki kontrolü
+  const roleCheck = await checkRole("admin");
+  if (!roleCheck.success) {
+    return roleCheck;
+  }
 
   try {
-    // JavaScript objesi olarak gelen veriyi kullan
-    const productData = {
-      name: data.name,
-      description: data.description,
-      price: parseFloat(data.price),
-      stock: parseInt(data.stock, 10),
-      status: data.status || "Aktif",
-      categoryId: data.categoryId,
-    };
-
-    const product = await createProductInDb(productData);
+    const product = await Product.create(data);
     revalidatePath("/products");
     return { success: true, data: product };
   } catch (error) {
@@ -70,16 +57,15 @@ export async function createProduct(data) {
   }
 }
 
-// features/products/servers/actions.js
 export async function updateProduct(productId, data) {
-  // Admin yetkisi kontrolü
-  await requireAdmin();
+  // Yetki kontrolü
+  const roleCheck = await checkRole("admin");
+  if (!roleCheck.success) {
+    return roleCheck;
+  }
 
   try {
-    // data, EditForm'dan gelen düz bir JavaScript objesi
-    // Doğrudan bu veriyi kullanın, formData.get() yapmayın
-
-    const product = await updateProductInDb(productId, data);
+    const product = await Product.update(productId, data);
     revalidatePath("/products");
     revalidatePath(`/products/${productId}`);
     return { success: true, data: product };
@@ -90,14 +76,39 @@ export async function updateProduct(productId, data) {
 }
 
 export async function deleteProduct(productId) {
-  // Admin yetkisi kontrolü
-  await requireAdmin();
+  // Yetki kontrolü
+  const roleCheck = await checkRole("admin");
+  if (!roleCheck.success) {
+    return roleCheck;
+  }
 
   try {
-    await deleteProductFromDb(productId);
+    await Product.delete(productId);
     revalidatePath("/products");
     return { success: true };
   } catch (error) {
+    console.error("Ürün silme hatası:", error);
     return { success: false, error: error.message };
   }
 }
+
+/* 
+
+`revalidatePath` Next.js'in App Router özelliğinin çok önemli bir fonksiyonudur. Şu amaçla kullanılır:
+
+1. **Önbellek (Cache) Yönetimi**: Next.js sayfaları ve verilerinizi varsayılan olarak önbelleğe alır (cache'ler). Bu performans açısından faydalıdır.
+
+2. **Veri Güncellemeleri**: Veritabanında bir değişiklik yaptığınızda (ürün ekleme, güncelleme, silme gibi), Next.js'in bu değişikliği bilmesi gerekir.
+
+3. **Sayfaları Yenileme**: `revalidatePath("/products")` çağrısı, "/products" yolundaki sayfaların önbelleğini geçersiz kılar ve yeni verilerle yeniden oluşturulmasını sağlar.
+
+Örneğin:
+- Bir ürün eklendiğinde, ürünler listesi sayfasının güncellenmesi gerekir
+- Bir ürün güncellendiğinde, hem ürünler listesi hem de o ürünün detay sayfasının güncellenmesi gerekir
+- Bir ürün silindiğinde, ürünler listesinin güncellenmesi gerekir
+
+`revalidatePath` olmadan, kullanıcılar veritabanındaki güncellemeleri görmek için sayfayı manuel olarak yenilemek zorunda kalırlardı. Bu fonksiyon, Next.js'in server-side rendering ve sayfa önbelleğe alma yeteneklerini kullanırken veri değişikliklerini doğru şekilde yönetmenizi sağlar.
+
+
+
+*/

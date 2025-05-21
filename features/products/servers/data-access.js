@@ -1,15 +1,50 @@
-// Bu dosya Prisma ile veritabanı işlemlerini gerçekleştirir
-import prisma from "@/lib/prisma";
+import { BaseRepository } from "@/repository";
 
-// Tüm ürünleri getir (filtreleme seçenekleri ile)
-export async function getProducts(filters = {}) {
+// Repository örnekleri
+const productRepo = new BaseRepository("product");
+const categoryRepo = new BaseRepository("category");
+
+// Product Include
+const productIncludes = { category: true };
+
+// Temel işlemler
+export const Product = {
+  getAll: async (filters = {}) => {
+    const where = buildProductFilters(filters);
+    return await productRepo.getAll(where, { updatedAt: "desc" }, productIncludes);
+  },
+
+  getById: async (id) => {
+    return await productRepo.getById(id, productIncludes);
+  },
+
+  create: async (data) => {
+    const productData = formatProductData(data);
+    return await productRepo.create(productData, productIncludes);
+  },
+
+  update: async (id, data) => {
+    const productData = formatProductData(data);
+    return await productRepo.update(id, productData, productIncludes);
+  },
+
+  delete: async (id) => {
+    return await productRepo.delete(id);
+  },
+};
+
+export const Category = {
+  getAll: async () => {
+    return await categoryRepo.getAll({}, { name: "asc" });
+  },
+};
+
+// Helper fonksiyonlar
+function buildProductFilters(filters) {
   const where = {};
 
-  // Filtrelemeleri ekle
   if (filters.category) {
-    where.category = {
-      name: filters.category,
-    };
+    where.category = { name: filters.category };
   }
 
   if (filters.search) {
@@ -19,7 +54,6 @@ export async function getProducts(filters = {}) {
     ];
   }
 
-  // Stok durumuna göre filtreleme
   if (filters.stock === "in-stock") {
     where.stock = { gt: 0 };
   } else if (filters.stock === "low-stock") {
@@ -28,76 +62,19 @@ export async function getProducts(filters = {}) {
     where.stock = 0;
   }
 
-  return await prisma.product.findMany({
-    where,
-    include: {
-      category: true,
-    },
-    orderBy: {
-      updatedAt: "desc",
-    },
-  });
+  return where;
 }
 
-// ID'ye göre bir ürün getir
-export async function getProductById(id) {
-  return await prisma.product.findUnique({
-    where: { id },
-    include: {
-      category: true,
-    },
-  });
+// Ürün verilerini formatlayan fonksiyon
+function formatProductData(data) {
+  return {
+    name: data.name,
+    description: data.description,
+    price: parseFloat(data.price),
+    stock: parseInt(data.stock || "0", 10),
+    status: data.status,
+    categoryId: data.categoryId,
+  };
 }
 
-// Tüm kategorileri getir
-export async function getCategories() {
-  try {
-    return await prisma.category.findMany({
-      orderBy: { name: "asc" },
-    });
-  } catch (error) {
-    console.error("Kategori getirme hatası:", error);
-    return []; // Hata durumunda boş dizi döndür
-  }
-}
-
-// Yeni ürün oluştur
-export async function createProductInDb(productData) {
-  return await prisma.product.create({
-    data: {
-      name: productData.name,
-      description: productData.description,
-      price: parseFloat(productData.price),
-      categoryId: productData.categoryId,
-      stock: parseInt(productData.stock || "0"),
-    },
-    include: {
-      category: true,
-    },
-  });
-}
-
-// Ürün güncelle
-// features/products/servers/data-access.js
-export async function updateProductInDb(productId, data) {
-  return prisma.product.update({
-    where: { id: productId },
-    data: {
-      name: data.name,
-      description: data.description,
-      price: parseFloat(data.price),
-      stock: parseInt(data.stock, 10),
-      status: data.status,
-      categoryId: data.categoryId,
-    },
-  });
-}
-
-// Ürün sil
-export async function deleteProductFromDb(id) {
-  await prisma.product.delete({
-    where: { id },
-  });
-
-  return true;
-}
+// Ortak Crud methodları burada tanımlanıyor
