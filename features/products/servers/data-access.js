@@ -65,7 +65,7 @@ function buildProductFilters(filters) {
   return where;
 }
 
-// Ürün verilerini formatlayan fonksiyon
+// Create ve Update için çalışan fonksiyon
 function formatProductData(data) {
   return {
     name: data.name,
