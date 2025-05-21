@@ -1,4 +1,4 @@
-import { EditForm, fetchCategories, fetchProductById, updateProduct } from "@/features/products";
+import { EditForm, fetchCategories, fetchProductById } from "@/features/products";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -48,23 +48,6 @@ export default async function EditProductPage(props) {
     status: product.status,
   };
 
-  async function handleSubmit(data) {
-    "use server";
-
-    // Admin yetkisi kontrol ediyoruz
-    const session = await auth();
-    if (session?.user?.role !== "admin") {
-      throw new Error("Bu işlemi gerçekleştirmek için admin yetkisine sahip olmalısınız.");
-    }
-
-    const result = await updateProduct(productId, data);
-
-    if (!result.success) {
-      throw new Error(result.error || "Ürün güncellenirken bir hata oluştu.");
-    }
-    redirect(`/products`);
-  }
-
   return (
     <div>
       <div className="mb-6">
@@ -86,7 +69,7 @@ export default async function EditProductPage(props) {
       <EditForm
         categories={categories}
         initialData={initialData}
-        onSubmit={handleSubmit}
+        productId={productId}
         isEdit={true}
       />
     </div>

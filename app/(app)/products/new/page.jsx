@@ -1,4 +1,4 @@
-import { EditForm, createProduct, fetchCategories } from "@/features/products";
+import { EditForm, fetchCategories } from "@/features/products";
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 
@@ -26,28 +26,6 @@ export default async function NewProductPage() {
     // Hata durumunda boş dizi kullan
   }
 
-  // Server action (form submit)
-  async function handleSubmit(formData) {
-    "use server";
-
-    const session = await auth();
-    if (session?.user?.role !== "admin") {
-      throw new Error("Bu işlemi gerçekleştirmek için admin yetkisine sahip olmalısınız.");
-    }
-
-    try {
-      const result = await createProduct(formData);
-
-      if (!result.success) {
-        throw new Error(result.error || "Ürün oluşturulurken bir hata oluştu.");
-      }
-
-      redirect("/products");
-    } catch (error) {
-      throw error;
-    }
-  }
-
   return (
     <div>
       <h1 className="text-2xl font-bold mb-6">Yeni Ürün Ekle</h1>
@@ -62,7 +40,7 @@ export default async function NewProductPage() {
           </a>
         </div>
       ) : (
-        <EditForm categories={categories} initialData={{}} onSubmit={handleSubmit} isEdit={false} />
+        <EditForm categories={categories} initialData={{}} isEdit={false} />
       )}
     </div>
   );

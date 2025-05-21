@@ -17,6 +17,9 @@ export default function ProductList({ products = [], showAdminControls = false }
           <Link href={`/products/${product.id}`} className="block hover:text-blue-600">
             <h3 className="text-lg font-medium">{product.name}</h3>
           </Link>
+          {product.category && (
+            <p className="text-sm text-gray-500 mt-1">Kategori: {product.category.name}</p>
+          )}
           <p className="text-gray-600 mt-2 line-clamp-2">{product.description}</p>
           <div className="mt-4 flex justify-between items-center">
             <span className="text-lg font-bold">{product.price} TL</span>

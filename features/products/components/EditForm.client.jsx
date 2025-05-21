@@ -1,8 +1,11 @@
 "use client";
 
+import { createProduct, updateProduct } from "@/features/products/servers/actions";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function EditForm({ categories, initialData = {}, onSubmit, isEdit = false }) {
+export default function EditForm({ categories, initialData = {}, productId, isEdit = false }) {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     name: initialData.name || "",
     description: initialData.description || "",
@@ -26,7 +29,29 @@ export default function EditForm({ categories, initialData = {}, onSubmit, isEdi
     setError("");
 
     try {
-      await onSubmit(formData);
+      // FormData nesnesine dönüştür
+      const formDataObj = new FormData();
+      Object.entries(formData).forEach(([key, value]) => {
+        formDataObj.append(key, value);
+      });
+
+      // Ürün oluşturma veya güncelleme
+      let result;
+      if (isEdit && productId) {
+        // Güncelleme işlemi
+        result = await updateProduct(productId, formDataObj);
+      } else {
+        // Yeni ürün oluşturma
+        result = await createProduct(formDataObj);
+      }
+
+      // Hata kontrolü
+      if (!result.success) {
+        throw new Error(result.error || "İşlem sırasında bir hata oluştu.");
+      }
+
+      // Başarılıysa, ürün listesine yönlendir
+      router.push("/products");
     } catch (err) {
       setError(err.message || "Bir hata oluştu.");
       setIsSubmitting(false);

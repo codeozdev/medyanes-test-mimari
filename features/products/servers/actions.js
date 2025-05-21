@@ -1,114 +1,176 @@
 // features/products/servers/actions.js
 "use server";
 
-import { checkRole } from "@/lib/action-helpers";
+import {
+  createNewData,
+  deleteDataByAny,
+  getAllData,
+  getDataByMany,
+  getDataByUnique,
+  updateDataByAny,
+} from "@/lib/db";
 import { revalidatePath } from "next/cache";
-import { Category, Product } from "./data-access";
 
-// Veri getirme işlemleri
+// Sabitler
+const PRODUCT_TABLE = "product";
+const CATEGORY_TABLE = "category";
+
+/**
+ * Tüm ürünleri getiren server action
+ */
 export async function fetchProducts(filters = {}) {
   try {
-    const products = await Product.getAll(filters);
+    let where = {};
+
+    // Filtreleri oluştur
+    if (filters.category) {
+      where.category = { name: filters.category };
+    }
+
+    if (filters.search) {
+      where.OR = [
+        { name: { contains: filters.search, mode: "insensitive" } },
+        { description: { contains: filters.search, mode: "insensitive" } },
+      ];
+    }
+
+    if (filters.stock === "in-stock") {
+      where.stock = { gt: 0 };
+    } else if (filters.stock === "low-stock") {
+      where.stock = { gt: 0, lte: 10 };
+    } else if (filters.stock === "out-of-stock") {
+      where.stock = 0;
+    }
+
+    const products =
+      Object.keys(where).length > 0
+        ? await getDataByMany(PRODUCT_TABLE, where, {
+            orderBy: { updatedAt: "desc" },
+            include: { category: true },
+          })
+        : await getAllData(PRODUCT_TABLE, {
+            orderBy: { updatedAt: "desc" },
+            include: { category: true },
+          });
+
     return { success: true, data: products };
   } catch (error) {
-    console.error("Ürün getirme hatası:", error);
+    console.error("Ürünler getirilirken hata:", error);
     return { success: false, error: error.message };
   }
 }
 
-export async function fetchProductById(productId) {
+/**
+ * ID ile ürün getiren server action
+ */
+export async function fetchProductById(id) {
   try {
-    const product = await Product.getById(productId);
-    if (!product) {
-      return { success: false, error: "Ürün bulunamadı." };
+    const product = await getDataByUnique(PRODUCT_TABLE, { id }, { category: true });
+    return { success: true, data: product };
+  } catch (error) {
+    console.error("Ürün getirilirken hata:", error);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function createProduct(formData) {
+  try {
+    // FormData'dan verileri alıp object'e dönüştürme
+    const data = {
+      name: formData.get("name"),
+      description: formData.get("description"),
+      price: parseFloat(formData.get("price")),
+      stock: parseInt(formData.get("stock") || "0", 10),
+      status: formData.get("status"),
+      categoryId: formData.get("categoryId"),
+    };
+
+    // Ürün oluştur
+    const newProduct = await createNewData(PRODUCT_TABLE, data);
+
+    // Hata kontrolü
+    if (newProduct.error) {
+      throw new Error(newProduct.error);
     }
-    return { success: true, data: product };
-  } catch (error) {
-    console.error("Ürün detayı getirme hatası:", error);
-    return { success: false, error: error.message };
-  }
-}
 
-export async function fetchCategories() {
-  try {
-    const categories = await Category.getAll();
-    return { success: true, data: categories };
-  } catch (error) {
-    console.error("Kategori getirme hatası:", error);
-    return { success: false, error: error.message };
-  }
-}
-
-// Admin yetkisi gerektiren işlemler
-export async function createProduct(data) {
-  // Yetki kontrolü
-  const roleCheck = await checkRole("admin");
-  if (!roleCheck.success) {
-    return roleCheck;
-  }
-
-  try {
-    const product = await Product.create(data);
+    // Cache'i yenile
     revalidatePath("/products");
-    return { success: true, data: product };
+    revalidatePath("/"); // Ana sayfayı da yenile
+
+    return { success: true, data: newProduct };
   } catch (error) {
-    console.error("Ürün oluşturma hatası:", error);
+    console.error("Ürün oluşturulurken hata:", error);
     return { success: false, error: error.message };
   }
 }
 
-export async function updateProduct(productId, data) {
-  // Yetki kontrolü
-  const roleCheck = await checkRole("admin");
-  if (!roleCheck.success) {
-    return roleCheck;
-  }
-
+/**
+ * Ürün güncelleyen server action
+ */
+export async function updateProduct(id, formData) {
   try {
-    const product = await Product.update(productId, data);
+    // FormData'dan verileri alıp object'e dönüştürme
+    const data = {
+      name: formData.get("name"),
+      description: formData.get("description"),
+      price: parseFloat(formData.get("price")),
+      stock: parseInt(formData.get("stock") || "0", 10),
+      status: formData.get("status"),
+      categoryId: formData.get("categoryId"),
+    };
+
+    // Ürün güncelle
+    const updatedProduct = await updateDataByAny(PRODUCT_TABLE, { id }, data, { category: true });
+
+    // Hata kontrolü
+    if (updatedProduct.error) {
+      throw new Error(updatedProduct.error);
+    }
+
+    // Cache'i yenile
     revalidatePath("/products");
-    revalidatePath(`/products/${productId}`);
-    return { success: true, data: product };
+    revalidatePath("/"); // Ana sayfayı da yenile
+    revalidatePath(`/products/${id}`);
+
+    return { success: true, data: updatedProduct };
   } catch (error) {
-    console.error("Ürün güncelleme hatası:", error);
+    console.error("Ürün güncellenirken hata:", error);
     return { success: false, error: error.message };
   }
 }
 
-export async function deleteProduct(productId) {
-  // Yetki kontrolü
-  const roleCheck = await checkRole("admin");
-  if (!roleCheck.success) {
-    return roleCheck;
-  }
-
+/**
+ * Ürün silen server action
+ */
+export async function deleteProduct(id) {
   try {
-    await Product.delete(productId);
+    const result = await deleteDataByAny(PRODUCT_TABLE, { id });
+
+    // Hata kontrolü
+    if (result.error) {
+      throw new Error(result.error);
+    }
+
+    // Cache'i yenile
     revalidatePath("/products");
+    revalidatePath("/"); // Ana sayfayı da yenile
+
     return { success: true };
   } catch (error) {
-    console.error("Ürün silme hatası:", error);
+    console.error("Ürün silinirken hata:", error);
     return { success: false, error: error.message };
   }
 }
 
-/* 
-
-`revalidatePath` Next.js'in App Router özelliğinin çok önemli bir fonksiyonudur. Şu amaçla kullanılır:
-
-1. **Önbellek (Cache) Yönetimi**: Next.js sayfaları ve verilerinizi varsayılan olarak önbelleğe alır (cache'ler). Bu performans açısından faydalıdır.
-
-2. **Veri Güncellemeleri**: Veritabanında bir değişiklik yaptığınızda (ürün ekleme, güncelleme, silme gibi), Next.js'in bu değişikliği bilmesi gerekir.
-
-3. **Sayfaları Yenileme**: `revalidatePath("/products")` çağrısı, "/products" yolundaki sayfaların önbelleğini geçersiz kılar ve yeni verilerle yeniden oluşturulmasını sağlar.
-
-Örneğin:
-- Bir ürün eklendiğinde, ürünler listesi sayfasının güncellenmesi gerekir
-- Bir ürün güncellendiğinde, hem ürünler listesi hem de o ürünün detay sayfasının güncellenmesi gerekir
-- Bir ürün silindiğinde, ürünler listesinin güncellenmesi gerekir
-
-`revalidatePath` olmadan, kullanıcılar veritabanındaki güncellemeleri görmek için sayfayı manuel olarak yenilemek zorunda kalırlardı. Bu fonksiyon, Next.js'in server-side rendering ve sayfa önbelleğe alma yeteneklerini kullanırken veri değişikliklerini doğru şekilde yönetmenizi sağlar.
-
-
-
-*/
+/**
+ * Tüm kategorileri getiren server action
+ */
+export async function fetchCategories() {
+  try {
+    const categories = await getAllData(CATEGORY_TABLE, { orderBy: { name: "asc" } });
+    return { success: true, data: categories };
+  } catch (error) {
+    console.error("Kategoriler getirilirken hata:", error);
+    return { success: false, error: error.message };
+  }
+}
