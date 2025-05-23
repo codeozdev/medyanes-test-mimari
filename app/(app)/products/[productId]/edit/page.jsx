@@ -1,10 +1,10 @@
 import { EditForm, fetchCategories, fetchProductById } from "@/features/products";
-import { auth } from "@/lib/auth";
+import { auth } from "@/servers/auth";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 // Bu sayfayı client component yapmak yerine server component olarak bırakalım
 export default async function EditProductPage(props) {
-  // Oturum kontrolü ekleyelim
   const session = await auth();
   const isAdmin = session?.user?.role === "admin";
 
@@ -13,7 +13,6 @@ export default async function EditProductPage(props) {
     redirect("/products");
   }
 
-  // params'ı Promise olarak ele alıp await ile bekleyelim
   const params = await Promise.resolve(props.params);
   const productId = params.productId;
 
@@ -26,11 +25,11 @@ export default async function EditProductPage(props) {
     return (
       <div className="bg-white shadow rounded-lg p-8 text-center">
         <p className="text-red-500">{productResult.error || "Ürün yüklenirken bir hata oluştu."}</p>
-        <a
+        <Link
           href="/products"
           className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700">
           Ürünlere Dön
-        </a>
+        </Link>
       </div>
     );
   }
@@ -75,3 +74,5 @@ export default async function EditProductPage(props) {
     </div>
   );
 }
+
+

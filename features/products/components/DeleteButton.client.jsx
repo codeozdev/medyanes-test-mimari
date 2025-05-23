@@ -1,13 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState } from "react";
+import {useState} from "react";
 import { deleteProduct } from "../servers/actions";
 
 export default function DeleteButton({ productId }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
-  const router = useRouter();
 
   async function handleDelete() {
     if (!confirm("Bu ürünü silmek istediğinizden emin misiniz?")) {
@@ -22,10 +20,8 @@ export default function DeleteButton({ productId }) {
 
       if (!result.success) {
         setError(result.error || "Ürün silinirken bir hata oluştu.");
-      } else {
-        router.refresh(); // Sayfayı yenileme
       }
-    } catch (error) {
+    } catch (e) {
       setError("Bir hata oluştu. Lütfen tekrar deneyin.");
     } finally {
       setIsDeleting(false);
@@ -33,15 +29,17 @@ export default function DeleteButton({ productId }) {
   }
 
   return (
-    <>
-      <button
-        onClick={handleDelete}
-        disabled={isDeleting}
-        className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50">
-        {isDeleting ? "Siliniyor..." : "Sil"}
-      </button>
+      <>
+        <button
+            onClick={handleDelete}
+            disabled={isDeleting}
+            className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50">
+          {isDeleting ? "Siliniyor..." : "Sil"}
+        </button>
 
-      {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
-    </>
+        {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
+      </>
   );
 }
+
+

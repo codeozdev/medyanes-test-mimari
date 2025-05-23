@@ -1,5 +1,5 @@
 import { LoginForm } from "@/features/auth";
-import { auth } from "@/lib/auth";
+import { auth } from "@/servers/auth";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 

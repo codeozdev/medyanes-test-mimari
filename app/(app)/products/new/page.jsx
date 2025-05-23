@@ -1,13 +1,14 @@
-import { EditForm, fetchCategories } from "@/features/products";
-import { auth } from "@/lib/auth";
+import {  fetchCategories } from "@/features/products";
+import { auth } from "@/servers/auth";
 import { redirect } from "next/navigation";
+import CreateForm from "@/features/products/components/CreateForm.client";
 
 export default async function NewProductPage() {
   // Oturumu kontrol et
   const session = await auth();
 
   // Admin değilse yönlendir
-  if (!session?.user?.role === "admin") {
+  if (session?.user?.role !== "admin") {
     redirect("/dashboard");
   }
 
@@ -40,7 +41,7 @@ export default async function NewProductPage() {
           </a>
         </div>
       ) : (
-        <EditForm categories={categories} initialData={{}} isEdit={false} />
+        <CreateForm categories={categories} />
       )}
     </div>
   );
