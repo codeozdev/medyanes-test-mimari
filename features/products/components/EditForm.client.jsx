@@ -1,32 +1,27 @@
 "use client";
 
+import { updateProduct } from "@/features/products";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function EditForm({ categories, initialData = {}, onSubmit, isEdit = false }) {
-  const [formData, setFormData] = useState({
-    name: initialData.name || "",
-    description: initialData.description || "",
-    price: initialData.price || "",
-    categoryId: initialData.categoryId || "",
-    stock: initialData.stock || "",
-    status: initialData.status || "Aktif",
-  });
-
+export default function EditForm({ categories, initialData = {}, productId }) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleAction = async (formData) => {
     setIsSubmitting(true);
     setError("");
 
     try {
-      await onSubmit(formData);
+      const result = await updateProduct(productId, formData);
+
+      // Hata kontrolü
+      if (!result.success) {
+        throw new Error(result.error || "İşlem sırasında bir hata oluştu.");
+      }
+
+      router.push("/products");
     } catch (err) {
       setError(err.message || "Bir hata oluştu.");
       setIsSubmitting(false);
@@ -34,7 +29,7 @@ export default function EditForm({ categories, initialData = {}, onSubmit, isEdi
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 bg-white shadow rounded-lg p-6">
+    <form action={handleAction} className="space-y-6 bg-white shadow rounded-lg p-6">
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
           <p>{error}</p>
@@ -51,8 +46,7 @@ export default function EditForm({ categories, initialData = {}, onSubmit, isEdi
             name="name"
             id="name"
             required
-            value={formData.name}
-            onChange={handleChange}
+            defaultValue={initialData.name || ""}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           />
         </div>
@@ -65,8 +59,7 @@ export default function EditForm({ categories, initialData = {}, onSubmit, isEdi
             id="categoryId"
             name="categoryId"
             required
-            value={formData.categoryId}
-            onChange={handleChange}
+            defaultValue={initialData.categoryId || ""}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
             <option value="" disabled>
               Kategori Seçin
@@ -90,8 +83,7 @@ export default function EditForm({ categories, initialData = {}, onSubmit, isEdi
             required
             min="0"
             step="0.01"
-            value={formData.price}
-            onChange={handleChange}
+            defaultValue={initialData.price || ""}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           />
         </div>
@@ -106,28 +98,24 @@ export default function EditForm({ categories, initialData = {}, onSubmit, isEdi
             id="stock"
             required
             min="0"
-            value={formData.stock}
-            onChange={handleChange}
+            defaultValue={initialData.stock || ""}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           />
         </div>
 
-        {isEdit && (
-          <div>
-            <label htmlFor="status" className="block text-sm font-medium text-gray-700">
-              Durum
-            </label>
-            <select
-              id="status"
-              name="status"
-              value={formData.status}
-              onChange={handleChange}
-              className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
-              <option value="Aktif">Aktif</option>
-              <option value="Pasif">Pasif</option>
-            </select>
-          </div>
-        )}
+        <div>
+          <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+            Durum
+          </label>
+          <select
+            id="status"
+            name="status"
+            defaultValue={initialData.status || "Aktif"}
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+            <option value="Aktif">Aktif</option>
+            <option value="Pasif">Pasif</option>
+          </select>
+        </div>
       </div>
 
       <div>
@@ -138,8 +126,7 @@ export default function EditForm({ categories, initialData = {}, onSubmit, isEdi
           id="description"
           name="description"
           rows={3}
-          value={formData.description}
-          onChange={handleChange}
+          defaultValue={initialData.description || ""}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         />
       </div>
@@ -154,7 +141,7 @@ export default function EditForm({ categories, initialData = {}, onSubmit, isEdi
           type="submit"
           disabled={isSubmitting}
           className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
-          {isSubmitting ? "Kaydediliyor..." : isEdit ? "Güncelle" : "Kaydet"}
+          {isSubmitting ? "Kaydediliyor..." : "Güncelle"}
         </button>
       </div>
     </form>

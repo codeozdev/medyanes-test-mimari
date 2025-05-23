@@ -1,0 +1,14 @@
+- Nextjs turbo olarak kullandigimizda useOptimistic hatasi aliyoruz bu hatadan kurtulmak icin Link yerine a tagi kullanmak zorunda kaliyoruz
+
+
+
+
+/*
+ # useOptimistic Hatası ve Çözümü
+
+React 19'daki `useOptimistic` hook'u henüz kararlı çalışmadığı için
+`<Link>` bileşeni bu hook'u kullanırken hata verdi, bu nedenle
+`<a>` etiketine geri dönerek bu hatayı aştık çünkü `<a>` etiketi
+bu hook'u kullanmadan doğrudan tarayıcının yönlendirme mekanizmasını kullanıyor.
+
+*/

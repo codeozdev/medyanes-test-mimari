@@ -1,6 +1,5 @@
 import { ProductList, fetchProducts } from "@/features/products";
-import { auth } from "@/lib/auth";
-import Link from "next/link";
+import { auth } from "@/servers/auth";
 
 export default async function ProductsPage() {
   // Oturum bilgisini ve kullanıcı rolünü al
@@ -16,11 +15,11 @@ export default async function ProductsPage() {
         <h1 className="text-2xl font-bold">Ürünler</h1>
 
         {isAdmin && (
-          <Link
+          <a
             href="/products/new"
             className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
             Yeni Ürün Ekle
-          </Link>
+          </a>
         )}
       </div>
 

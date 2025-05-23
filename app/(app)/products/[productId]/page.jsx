@@ -1,5 +1,5 @@
 import { ProductDetailView, fetchProductById } from "@/features/products";
-import { auth } from "@/lib/auth";
+import { auth } from "@/servers/auth";
 
 export default async function ProductDetailPage(props) {
   // params nesnesini await ile bekleyin

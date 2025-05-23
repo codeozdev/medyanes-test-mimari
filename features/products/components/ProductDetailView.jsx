@@ -17,7 +17,12 @@ export default function ProductDetailView({ success, product, error, productId, 
   return (
     <div>
       <div className="mb-6 flex justify-between items-center">
-        <h1 className="text-2xl font-bold">{product.name}</h1>
+        <div>
+          <h1 className="text-2xl font-bold">{product.name}</h1>
+          {product.category && (
+            <p className="text-sm text-gray-500">Kategori: {product.category.name}</p>
+          )}
+        </div>
         <div className="space-x-3">
           <Link href="/products" className="text-sm font-medium text-gray-600 hover:text-gray-900">
             &larr; Tüm Ürünlere Dön
@@ -43,6 +48,10 @@ export default function ProductDetailView({ success, product, error, productId, 
                   <div className="py-4 flex justify-between">
                     <dt className="text-gray-500">Ürün Adı</dt>
                     <dd className="text-gray-900">{product.name}</dd>
+                  </div>
+                  <div className="py-4 flex justify-between">
+                    <dt className="text-gray-500">Kategori</dt>
+                    <dd className="text-gray-900">{product.category?.name || "Kategorisiz"}</dd>
                   </div>
                   <div className="py-4 flex justify-between">
                     <dt className="text-gray-500">Fiyat</dt>

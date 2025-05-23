@@ -1,32 +1,30 @@
 "use client";
 
+import { createProduct } from "@/features/products";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export default function CreateForm({ categories, onSubmit }) {
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: "",
-    categoryId: "",
-    stock: "",
-    status: "Aktif",
-  });
-
+export default function CreateForm({ categories }) {
+  const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // Form verilerini server action'a gönderen fonksiyon
+  const handleAction = async (formData) => {
     setIsSubmitting(true);
     setError("");
 
     try {
-      await onSubmit(formData);
+      // Server action'ı çağır
+      const result = await createProduct(formData);
+
+      // Hata kontrolü
+      if (!result.success) {
+        throw new Error(result.error || "İşlem sırasında bir hata oluştu.");
+      }
+
+      // Başarılıysa, ürün listesine yönlendir
+      router.push("/products");
     } catch (err) {
       setError(err.message || "Bir hata oluştu.");
       setIsSubmitting(false);
@@ -34,7 +32,7 @@ export default function CreateForm({ categories, onSubmit }) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 bg-white shadow rounded-lg p-6">
+    <form action={handleAction} className="space-y-6 bg-white shadow rounded-lg p-6">
       {error && (
         <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
           <p>{error}</p>
@@ -51,8 +49,6 @@ export default function CreateForm({ categories, onSubmit }) {
             name="name"
             id="name"
             required
-            value={formData.name}
-            onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           />
         </div>
@@ -65,8 +61,6 @@ export default function CreateForm({ categories, onSubmit }) {
             id="categoryId"
             name="categoryId"
             required
-            value={formData.categoryId}
-            onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
             <option value="" disabled>
               Kategori Seçin
@@ -90,8 +84,6 @@ export default function CreateForm({ categories, onSubmit }) {
             required
             min="0"
             step="0.01"
-            value={formData.price}
-            onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           />
         </div>
@@ -106,10 +98,22 @@ export default function CreateForm({ categories, onSubmit }) {
             id="stock"
             required
             min="0"
-            value={formData.stock}
-            onChange={handleChange}
             className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
           />
+        </div>
+        
+        <div>
+          <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+            Durum
+          </label>
+          <select
+            id="status"
+            name="status"
+            defaultValue="Aktif"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm">
+            <option value="Aktif">Aktif</option>
+            <option value="Pasif">Pasif</option>
+          </select>
         </div>
       </div>
 
@@ -121,8 +125,6 @@ export default function CreateForm({ categories, onSubmit }) {
           id="description"
           name="description"
           rows={3}
-          value={formData.description}
-          onChange={handleChange}
           className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
         />
       </div>
