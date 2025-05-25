@@ -1,9 +1,6 @@
-export { default as LoginForm } from "./components/LoginForm.client.jsx";
+export { default as LoginForm } from "./components/LoginForm";
 export { default as LogoutButton } from "./components/LogoutButton.client";
-export { default as RegisterForm } from "./components/RegisterForm.client";
+export { default as RegisterForm } from "./components/RegisterForm.jsx";
 
 // Server Actions
-export { registerUser } from "./servers/actions";
-
-// Data Access
-export { createUser, getUserByEmail, getUserById } from "./servers/data-access";
+export { loginUser, registerUser } from "./servers/actions";

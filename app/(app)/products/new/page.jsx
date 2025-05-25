@@ -1,7 +1,6 @@
-import {  fetchCategories } from "@/features/products";
+import { CreateForm, fetchCategories } from "@/features/products";
 import { auth } from "@/servers/auth";
 import { redirect } from "next/navigation";
-import CreateForm from "@/features/products/components/CreateForm.client";
 
 export default async function NewProductPage() {
   // Oturumu kontrol et

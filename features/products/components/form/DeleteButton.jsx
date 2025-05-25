@@ -1,7 +1,7 @@
 "use client";
 
-import {useState} from "react";
-import { deleteProduct } from "../servers/actions";
+import { useState } from "react";
+import { deleteProduct } from "../../servers/actions";
 
 export default function DeleteButton({ productId }) {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -29,17 +29,15 @@ export default function DeleteButton({ productId }) {
   }
 
   return (
-      <>
-        <button
-            onClick={handleDelete}
-            disabled={isDeleting}
-            className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50">
-          {isDeleting ? "Siliniyor..." : "Sil"}
-        </button>
+    <>
+      <button
+        onClick={handleDelete}
+        disabled={isDeleting}
+        className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50">
+        {isDeleting ? "Siliniyor..." : "Sil"}
+      </button>
 
-        {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
-      </>
+      {error && <div className="text-red-500 text-xs mt-1">{error}</div>}
+    </>
   );
 }
-
-
