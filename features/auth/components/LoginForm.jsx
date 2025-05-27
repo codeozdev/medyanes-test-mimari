@@ -31,7 +31,7 @@ export default function LoginForm() {
     // Form genel hatası için
     clearErrors("root");
 
-    const errorFromUrl = searchParams.get("error");
+    const errorFromUrl = searchParams.get("error"); // giris yaparkenki hatayi yakalamak icin
     if (errorFromUrl) {
       if (errorFromUrl === "CredentialsSignin") {
         setFormError("root", {
@@ -49,8 +49,6 @@ export default function LoginForm() {
     // Başarılı kayıt mesajı
     const registered = searchParams.get("registered");
     if (registered === "true") {
-      // Form başarı mesajı için genel hata yerine ayrı bir state kullanmak daha iyi olabilir
-      // Ancak örnek amaçlı buraya ekledim
       setFormError("success", {
         type: "manual",
         message: "Kayıt işlemi başarılı! Şimdi giriş yapabilirsiniz.",
