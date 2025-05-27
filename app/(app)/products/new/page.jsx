@@ -1,5 +1,5 @@
-import { EditForm, createProduct, getCategories } from "@/features/products";
-import { auth } from "@/lib/auth";
+import { CreateForm, fetchCategories } from "@/features/products";
+import { auth } from "@/servers/auth";
 import { redirect } from "next/navigation";
 
 export default async function NewProductPage() {
@@ -7,46 +7,23 @@ export default async function NewProductPage() {
   const session = await auth();
 
   // Admin değilse yönlendir
-  if (!session?.user?.role === "admin") {
+  if (session?.user?.role !== "admin") {
     redirect("/dashboard");
   }
 
   // Kategorileri getir
   let categories = [];
   try {
-    categories = await getCategories();
+    const result = await fetchCategories();
 
-    // Eğer categories undefined veya null gelirse boş dizi kullan
-    if (!categories) {
-      categories = [];
-      console.error("Kategoriler yüklenemedi");
+    if (result.success) {
+      categories = result.data;
+    } else {
+      console.error("Kategoriler yüklenemedi:", result.error);
     }
   } catch (error) {
     console.error("Kategori yükleme hatası:", error);
     // Hata durumunda boş dizi kullan
-    categories = [];
-  }
-
-  // Server action (form submit)
-  async function handleSubmit(formData) {
-    "use server";
-
-    const session = await auth();
-    if (session?.user?.role !== "admin") {
-      throw new Error("Bu işlemi gerçekleştirmek için admin yetkisine sahip olmalısınız.");
-    }
-
-    try {
-      const result = await createProduct(formData);
-
-      if (!result.success) {
-        throw new Error(result.error || "Ürün oluşturulurken bir hata oluştu.");
-      }
-
-      redirect("/products");
-    } catch (error) {
-      throw error;
-    }
   }
 
   return (
@@ -63,7 +40,7 @@ export default async function NewProductPage() {
           </a>
         </div>
       ) : (
-        <EditForm categories={categories} initialData={{}} onSubmit={handleSubmit} isEdit={false} />
+        <CreateForm categories={categories} />
       )}
     </div>
   );

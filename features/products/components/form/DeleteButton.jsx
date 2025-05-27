@@ -1,13 +1,11 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { deleteProduct } from "../servers/actions";
+import { deleteProduct } from "../../servers/actions";
 
 export default function DeleteButton({ productId }) {
   const [isDeleting, setIsDeleting] = useState(false);
   const [error, setError] = useState("");
-  const router = useRouter();
 
   async function handleDelete() {
     if (!confirm("Bu ürünü silmek istediğinizden emin misiniz?")) {
@@ -22,10 +20,8 @@ export default function DeleteButton({ productId }) {
 
       if (!result.success) {
         setError(result.error || "Ürün silinirken bir hata oluştu.");
-      } else {
-        router.refresh(); // Sayfayı yenileme
       }
-    } catch (error) {
+    } catch (e) {
       setError("Bir hata oluştu. Lütfen tekrar deneyin.");
     } finally {
       setIsDeleting(false);
